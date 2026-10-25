@@ -1,0 +1,10 @@
+# Website build output and local preview files
+_build/
+_mission/
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+.bundle/
+vendor/
+Gemfile.lock

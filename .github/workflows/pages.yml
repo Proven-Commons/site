@@ -1,0 +1,111 @@
+# Builds the website and publishes it to GitHub Pages.
+#
+# This repo holds the templates. The text lives in the mission repo: every
+# Markdown file there is fetched at build time, so the site shows the current
+# documents and never a copy. Pull requests get the build and the checks,
+# not the deploy.
+#
+# Needs Settings > Pages > Build and deployment > Source: "GitHub Actions".
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # The mission repo cannot start this workflow, so look for new documents
+  # every hour.
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  MISSION_REPO: Proven-Commons/mission
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: Check out the templates
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # While the tar audit (mission#1) is open, show its branch: it carries
+      # the audited status of the tar pilot. Once it is closed, show main.
+      - name: Choose which mission documents to show
+        id: docs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state=$(gh api "repos/$MISSION_REPO/pulls/1" --jq .state 2>/dev/null || echo unknown)
+          if [ "$state" = open ]; then ref=claude/tar-pilot-audit; else ref=main; fi
+          echo "Showing $MISSION_REPO at $ref (mission#1 is $state)."
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the mission documents
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ env.MISSION_REPO }}
+          ref: ${{ steps.docs.outputs.ref }}
+          path: _mission
+          persist-credentials: false
+
+      - name: Put the templates and the documents together
+        env:
+          DOCS_REF: ${{ steps.docs.outputs.ref }}
+        run: |
+          scripts/assemble.sh _mission _build
+          printf '\ndocs_ref: %s\n' "$DOCS_REF" >> _build/_config.yml
+
+      # GitHub Pages builds with this action and the github-pages gem, version
+      # 232. When Dependabot moves it to a release with a new gem version,
+      # change the version in the Gemfile to match.
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
+        with:
+          source: ./_build
+          destination: ./_site
+
+      - name: Check that the home page found its sections
+        run: |
+          test -s _site/index.html || { echo "::error::The build wrote no home page."; exit 1; }
+          if grep -o 'data-missing="[^"]*"' _site/index.html; then
+            echo "::error file=index.html::The home page could not find, or could not read, the parts listed above in the mission repo's README.md or FOUNDING-BRIEF.md. Either a heading was renamed, or a part changed shape, for example a list inside a list, or a table or list where the home page expects paragraphs. The note at the top of index.html lists the shapes it reads."
+            exit 1
+          fi
+
+      - name: Check the links between pages
+        run: python3 .github/scripts/check_site_links.py _site /site
+
+      - name: Check that Pages is set up
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload the site
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

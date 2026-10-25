@@ -1,0 +1,24 @@
+<footer class="site-footer">
+  <div class="wrap site-footer-inner">
+    <div class="site-footer-about">
+      <p class="brand">{% include mark.html %}<span>Proven Commons</span></p>
+      <p>A programme of Foundation-0, a non-profit organisation.</p>
+    </div>
+    <nav class="site-footer-nav" aria-label="Footer">
+      <ul>
+        <li><a href="{{ '/brief/' | relative_url }}">Founding brief</a></li>
+        <li><a href="{{ site.org_url }}">GitHub organisation</a></li>
+        <li><a href="{{ site.repo_url }}">Mission repo</a></li>
+        <li><a href="{{ site.repo_url }}/issues">Comment or ask a question</a></li>
+      </ul>
+    </nav>
+    {%- assign docs_ref = site.docs_ref | default: 'main' -%}
+    {%- assign docs_blob = site.repo_url | append: '/blob/' | append: docs_ref %}
+    <p class="site-footer-source">
+      {%- if site.site_repo_url %}This site is built by the <a href="{{ site.site_repo_url }}">site repo</a>, with text from the <a href="{{ site.repo_url }}">mission repo</a>.
+      {%- else %}This site is built from the <a href="{{ site.repo_url }}">mission repo</a>.{% endif %}
+      {%- if page.url == '/' %} The text of this page comes from <a href="{{ docs_blob }}/README.md">README.md</a> and <a href="{{ docs_blob }}/FOUNDING-BRIEF.md">FOUNDING-BRIEF.md</a>.
+      {%- elsif page.url != '/404.html' and page.path %} <a href="{{ docs_blob }}/{{ page.path }}">View the source of this page</a>.
+      {%- endif %}</p>
+  </div>
+</footer>
