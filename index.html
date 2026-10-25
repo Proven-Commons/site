@@ -11,8 +11,9 @@ body_class: home
                        "The verified bar", "First wave", "The academy"
 
   Only the headings and a few short lines are written here: the hero line,
-  the four "what a project ships" cards, the sponsorship note, and the
-  projects intro. Check them when either document changes.
+  the four "what a project ships" cards, the sponsorship note, the projects
+  intro, and the "planned" notes on the first wave and the academy. Check
+  them when either document changes.
 
   When a part is not where this page expects it, or not in the shape it
   expects, the page shows a link to the source instead of guessing, and the
@@ -31,8 +32,10 @@ body_class: home
 {%- assign readme_url = site.repo_url | append: '#readme' -%}
 
 {%- comment -%}
-  The first two paragraphs after the title, skipping badges and quotes such
-  as a GitHub note.
+  The first two paragraphs after the title, skipping badges, quotes such as
+  a GitHub note, and lines that are only a link (such as "Visit the
+  website"). A paragraph of fewer than eight words is not taken as either,
+  so the build fails instead of showing the wrong line.
 {%- endcomment -%}
 {%- assign readme_top = readme -%}
 {%- if readme contains '</h1>' -%}{%- assign readme_top = readme | split: '</h1>' | slice: 1, 1 | first -%}{%- endif -%}
@@ -48,8 +51,16 @@ body_class: home
 {%- for raw in readme_intro offset: 1 -%}
   {%- assign para = raw | split: '</p>' | first | strip -%}
   {%- if para == '' or para contains '<img' -%}{%- continue -%}{%- endif -%}
+  {%- assign para_start = para | slice: 0, 3 -%}
+  {%- assign para_end = para | slice: -4, 4 -%}
+  {%- assign para_links = para | split: '</a>' | size -%}
+  {%- if para_start == '<a ' and para_end == '</a>' and para_links == 1 -%}{%- continue -%}{%- endif -%}
+  {%- assign para_words = para | strip_html | split: ' ' | size -%}
+  {%- if para_words < 8 -%}{%- assign para = 'too short' -%}{%- endif -%}
   {%- if lede == '' -%}{%- assign lede = para -%}{%- elsif ships == '' -%}{%- assign ships = para -%}{%- endif -%}
 {%- endfor %}
+{%- if lede == 'too short' -%}{%- assign lede = '' -%}{%- endif -%}
+{%- if ships == 'too short' -%}{%- assign ships = '' -%}{%- endif -%}
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap">
@@ -140,6 +151,7 @@ body_class: home
 {%- include split-list.html html=first_wave -%}
 {%- assign wave_ok = sl_ok -%}
 {%- assign wave_items = sl_items -%}
+{%- assign wave_intro = sl_intro | strip -%}
 {%- assign wave_shown = false -%}
 {%- assign reviews = site.pages | where: 'path', 'reviews/README.md' | first %}
 
@@ -148,7 +160,7 @@ body_class: home
     <header class="section-head">
       <p class="eyebrow">Projects</p>
       <h2 id="projects-title">One repo per library</h2>
-      <p>Each library gets a repo of its own in the <a href="{{ site.org_url }}">Proven-Commons organisation</a>, named for the software it verifies.</p>
+      <p>Each verified library gets a repo of its own in the <a href="{{ site.org_url }}">Proven-Commons organisation</a>, named for the software it verifies.</p>
     </header>
     {%- assign project_paras = projects | split: '<p>' -%}
     {%- if projects contains '<ul' or projects contains '<ol' or projects contains '<pre' or projects contains '<table' or projects contains '<blockquote' or projects contains '<h' -%}
@@ -192,6 +204,10 @@ body_class: home
         {%- if label6 == 'Wave 1' -%}
           {%- assign wave_shown = true -%}
           {%- if wave_ok %}
+            {%- assign wave_intro_last = wave_intro | split: '<p>' | last | split: '</p>' | first | strip -%}
+            {%- assign wave_intro_start = wave_intro_last | slice: 0, 6 %}
+    <p class="subhead-text">This is a plan: no wave starts without funding for its full run.
+            {%- if wave_intro_start == 'Wave 1' %} From the founding brief: {{ wave_intro_last }}{% endif %}</p>
     <ul class="cards">
             {%- for raw in wave_items offset: 1 -%}
               {%- assign item = raw | split: '</li>' | first | strip -%}
@@ -280,7 +296,7 @@ body_class: home
 <section class="section" id="academy" aria-labelledby="academy-title">
   <div class="wrap">
     <header class="section-head">
-      <p class="eyebrow">The academy</p>
+      <p class="eyebrow">The academy, as planned</p>
       <h2 id="academy-title">Learn by shipping</h2>
       {%- if sl_ok %}
       {{ sl_intro | remove: '<p>Ladder:</p>' | strip }}

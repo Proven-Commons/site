@@ -17,7 +17,8 @@
     <p class="site-footer-source">
       {%- if site.site_repo_url %}This site is built by the <a href="{{ site.site_repo_url }}">site repo</a>, with text from the <a href="{{ site.repo_url }}">mission repo</a>.
       {%- else %}This site is built from the <a href="{{ site.repo_url }}">mission repo</a>.{% endif %}
-      {%- if page.url == '/' %} The text of this page comes from <a href="{{ docs_blob }}/README.md">README.md</a> and <a href="{{ docs_blob }}/FOUNDING-BRIEF.md">FOUNDING-BRIEF.md</a>.
+      {%- if docs_ref != 'main' %} It shows the mission documents on the <a href="{{ site.repo_url }}/tree/{{ docs_ref }}">{{ docs_ref }}</a> branch, which is not yet merged into main.{% endif %}
+      {%- if page.url == '/' %} The quoted text on this page comes from <a href="{{ docs_blob }}/README.md">README.md</a> and <a href="{{ docs_blob }}/FOUNDING-BRIEF.md">FOUNDING-BRIEF.md</a>; the headings and a few short lines are written for the site.
       {%- elsif page.url != '/404.html' and page.path %} <a href="{{ docs_blob }}/{{ page.path }}">View the source of this page</a>.
       {%- endif %}</p>
   </div>
