@@ -34,6 +34,8 @@ social:
   name: Proven Commons
   links:
     - https://github.com/Proven-Commons
+twitter:
+  card: summary_large_image
 
 # The site has its own layouts. Without this, GitHub adds its default theme.
 theme: null
@@ -88,3 +90,53 @@ defaults:
         The full plan for Proven Commons: how a project moves through the
         factory, the verified bar, the academy, funding, and the 90-day plan.
       permalink: /brief/
+      image:
+        path: /assets/img/og-brief.png
+        width: 1200
+        height: 630
+        alt: Proven Commons Executive Brief.
+  - scope:
+      path: playbook/README.md
+    values:
+      title: Proven Commons Verification Playbook
+      image:
+        path: /assets/img/og-playbook.png
+        width: 1200
+        height: 630
+        alt: Proven Commons Verification Playbook.
+  - scope:
+      path: playbook/verified-bar.md
+    values:
+      title: "The Verified Bar: What counts as proven"
+      image:
+        path: /assets/img/og-verified-bar.png
+        width: 1200
+        height: 630
+        alt: "The Verified Bar: What counts as proven."
+  - scope:
+      path: reviews/README.md
+    values:
+      title: Independent Verification Reviews
+      image:
+        path: /assets/img/og-reviews.png
+        width: 1200
+        height: 630
+        alt: Independent Verification Reviews.
+  - scope:
+      path: reviews/tar/2026-10-24-bar-audit.md
+    values:
+      title: "TAR Archive Library: Verified Bar Audit"
+      image:
+        path: /assets/img/og-tar-audit.png
+        width: 1200
+        height: 630
+        alt: "TAR Archive Library: Verified Bar Audit."
+  - scope:
+      path: CANDIDATES.md
+    values:
+      title: Candidate Libraries for Formal Verification
+      image:
+        path: /assets/img/og-candidates.png
+        width: 1200
+        height: 630
+        alt: Candidate Libraries for Formal Verification.
